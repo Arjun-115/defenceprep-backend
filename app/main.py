@@ -6,7 +6,7 @@ app = FastAPI(title="DefencePrep AI", version="1.0.0")
 
 import os
 
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://defenceprep-api.netlify.app").split(",")
 
 app.add_middleware(
     CORSMiddleware,
