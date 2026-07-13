@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 from typing import Optional
 from app.data.cds_pyq import CDS_PYQ, CDS_SUBJECTS
+from app.admin.database import get_custom_questions
 
 router = APIRouter()
 
@@ -25,13 +26,12 @@ def get_subject_topics(subject_name: str):
 
 @router.get("/pyq")
 def get_cds_pyq(
-    subject: Optional[str] = Query(None, description="English | Elementary Mathematics | General Knowledge"),
-    topic: Optional[str] = Query(None, description="e.g., Synonyms, Algebra, History"),
-    year: Optional[int] = Query(None, description="2015-2024"),
-    paper: Optional[str] = Query(None, description="I or II"),
+    subject: Optional[str] = Query(None),
+    topic: Optional[str] = Query(None),
+    year: Optional[int] = Query(None),
+    paper: Optional[str] = Query(None),
 ):
-    """Get CDS PYQs with optional filters."""
-    results = CDS_PYQ
+    results = CDS_PYQ + get_custom_questions()
 
     if subject:
         results = [q for q in results if subject.lower() in q["subject"].lower()]
