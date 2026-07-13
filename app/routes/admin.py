@@ -19,6 +19,17 @@ router = APIRouter()
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# ── PUBLIC NOTIFICATIONS (no auth) ────────────────────────
+@router.get("/public/notifications")
+def get_public_notifications():
+    settings = get_settings()
+    notifs = settings.get("notifications", [
+        {"id":1,"text":"CDS II 2024 notification released by UPSC","date":"2024-06-01","type":"exam"},
+        {"id":2,"text":"975+ PYQs now available across all subjects","date":"2024-07-01","type":"update"},
+        {"id":3,"text":"SSB preparation module updated with latest OLQ guide","date":"2024-07-10","type":"update"},
+    ])
+    return {"notifications": notifs}
+
 # ── AUTH ───────────────────────────────────────────────────
 @router.post("/login")
 def admin_login(payload: dict = Body(...)):
@@ -245,3 +256,40 @@ async def import_json(
             saved.append(save_question(q))
 
     return {"message": f"{len(saved)} questions imported", "imported": len(saved), "skipped": len(questions) - len(saved)}
+
+
+# ── PUBLIC ENDPOINTS (no auth) ────────────────────────────
+@router.get("/public/notifications")
+def get_public_notifications():
+    settings = get_settings()
+    notifs = settings.get("notifications", [
+        {"id":1,"text":"CDS II 2025 notification released by UPSC — Apply now!","date":"2025-01-15","type":"exam"},
+        {"id":2,"text":"975+ PYQs now available across CDS, NDA, AFCAT subjects","date":"2024-07-01","type":"update"},
+        {"id":3,"text":"New SSB Psychology Tests (TAT/WAT/SRT/PPDT) added","date":"2024-07-10","type":"update"},
+        {"id":4,"text":"Evening Daily Tests now live — attempt every day to build streak","date":"2024-07-12","type":"feature"},
+        {"id":5,"text":"Free Notes section added — Formula sheets, Grammar, GK cheatsheets","date":"2024-07-13","type":"feature"},
+    ])
+    return {"notifications": notifs}
+
+@router.post("/public/notifications")
+def add_notification(payload: dict = Body(...), admin=Depends(require_admin)):
+    settings = get_settings()
+    notifs = settings.get("notifications", [])
+    new_notif = {
+        "id": max([n.get("id",0) for n in notifs], default=0) + 1,
+        "text": payload.get("text",""),
+        "date": payload.get("date", datetime.utcnow().strftime("%Y-%m-%d")),
+        "type": payload.get("type","update"),
+    }
+    notifs.insert(0, new_notif)
+    settings["notifications"] = notifs[:20]
+    save_settings(settings)
+    return {"message": "Notification added", "notification": new_notif}
+
+@router.delete("/public/notifications/{nid}")
+def delete_notification(nid: int, admin=Depends(require_admin)):
+    settings = get_settings()
+    notifs = [n for n in settings.get("notifications",[]) if n.get("id") != nid]
+    settings["notifications"] = notifs
+    save_settings(settings)
+    return {"message": "Deleted"}

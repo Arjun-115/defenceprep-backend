@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from datetime import datetime, date
+from app.admin.database import get_custom_ca
 
 router = APIRouter()
 
@@ -136,8 +137,10 @@ def get_today_question():
 
 @router.get("/all")
 def get_all_questions():
-    """Return all current affairs questions."""
-    return {"count": len(CURRENT_AFFAIRS), "questions": CURRENT_AFFAIRS}
+    """Return all current affairs questions including admin-added ones."""
+    custom = get_custom_ca()
+    all_items = CURRENT_AFFAIRS + custom
+    return {"count": len(all_items), "questions": all_items}
 
 
 @router.get("/week")

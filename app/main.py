@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import exams, pyq, ssb, learning, cds, mentor
 from app.routes import admin as admin_router, mocktest, currentaffairs
+from app.routes import materials as materials_router
 
 app = FastAPI(title="DefencePrep AI", version="1.0.0")
 
@@ -26,6 +27,7 @@ app.include_router(mentor.router, prefix="/api/mentor", tags=["AI Mentor"])
 app.include_router(admin_router.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(mocktest.router, prefix="/api/mocktest", tags=["Mock Test"])
 app.include_router(currentaffairs.router, prefix="/api/currentaffairs", tags=["Current Affairs"])
+app.include_router(materials_router.router, prefix="/api/materials", tags=["Materials"])
 
 @app.get("/")
 def root():
