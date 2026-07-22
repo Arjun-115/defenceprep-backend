@@ -1,7 +1,17 @@
 from fastapi import APIRouter, Query
 from typing import Optional
+import random
 
 router = APIRouter()
+
+def _shuffle_q(q: dict) -> dict:
+    if not q.get("options") or not q.get("answer"):
+        return q
+    opts = list(q["options"])
+    correct = q["answer"]
+    rng = random.Random(q.get("id", 0) * 7 + 13)
+    rng.shuffle(opts)
+    return {**q, "options": opts, "answer": correct}
 
 PYQ_DATA = [
     {
@@ -75,7 +85,7 @@ def get_pyq(
         results = [q for q in results if q["year"] == year]
     if subject:
         results = [q for q in results if subject.lower() in q["subject"].lower()]
-    return {"total": len(results), "questions": results}
+    return {"total": len(results), "questions": [_shuffle_q(q) for q in results]}
 
 @router.get("/exams")
 def get_pyq_exams():

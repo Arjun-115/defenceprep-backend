@@ -1,9 +1,29 @@
 from fastapi import APIRouter, Query
 from typing import Optional
+import random
 from app.data.cds_pyq import CDS_PYQ, CDS_SUBJECTS
 from app.admin.database import get_custom_questions
 
 router = APIRouter()
+
+
+def shuffle_options(q: dict) -> dict:
+    """
+    Shuffle the options of a question using its ID as seed so:
+    - Same question always shows same shuffled order (deterministic)
+    - But answer is NOT always at position B/C — spread across A/B/C/D
+    """
+    if not q.get("options") or not q.get("answer"):
+        return q
+
+    opts = list(q["options"])
+    correct = q["answer"]
+
+    # Use question ID as seed — deterministic but unique per question
+    rng = random.Random(q.get("id", 0) * 7 + 13)
+    rng.shuffle(opts)
+
+    return {**q, "options": opts, "answer": correct}
 
 
 @router.get("/subjects")
@@ -45,7 +65,7 @@ def get_cds_pyq(
     return {
         "total": len(results),
         "filters": {"subject": subject, "topic": topic, "year": year, "paper": paper},
-        "questions": results
+        "questions": [shuffle_options(q) for q in results]
     }
 
 
@@ -81,5 +101,5 @@ def get_topic_wise_breakdown():
             grouped[s] = {}
         if t not in grouped[s]:
             grouped[s][t] = []
-        grouped[s][t].append(q)
+        grouped[s][t].append(shuffle_options(q))
     return {"data": grouped}
