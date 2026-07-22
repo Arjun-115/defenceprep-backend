@@ -160,6 +160,12 @@ async def upload_pdf(
 def list_uploads(admin=Depends(require_admin)):
     return {"uploads": get_uploads()}
 
+@router.get("/uploads/public")
+def list_uploads_public():
+    """Public endpoint — shows uploaded materials (no auth needed for viewing)"""
+    uploads = get_uploads()
+    return {"uploads": uploads}
+
 # ── STUDY MATERIALS ────────────────────────────────────────
 @router.get("/materials")
 def list_materials(admin=Depends(require_admin)):
